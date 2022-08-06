@@ -5,8 +5,10 @@ Revises:
 Create Date: 2022-08-07 02:12:11.098965
 
 """
+
 from alembic import op
 import sqlalchemy as sa
+
 
 
 # revision identifiers, used by Alembic.
@@ -17,8 +19,11 @@ depends_on = None
 
 
 def upgrade() -> None:
-    pass
-
+    op.create_table('betterposts', 
+    sa.Column('id', sa.Integer(), nullable = False, primary_key = True),
+    sa.Column('email', sa.String(), nullable = False)
+    )
 
 def downgrade() -> None:
+    op.drop_table('betterposts')
     pass
