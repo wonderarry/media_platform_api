@@ -3,25 +3,24 @@ from datetime import datetime, timedelta
 from .schemas import TokenData
 from fastapi import HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
+from .config import settings
 
-secretkey = 'hello'
-algorithm = 'HS256'
-access_token_expire_minutes = 30
+
 # it is /login without the slash, means it is route on the website
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
 
 async def change_access_token(data: dict):
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=access_token_expire_minutes)
+    expire = datetime.utcnow() + timedelta(minutes=settings.access_token_expire_minutes)
     to_encode.update({'exp': expire})
-    jwtres = jwt.encode(to_encode, secretkey, algorithm=algorithm)
+    jwtres = jwt.encode(to_encode, settings.secretkey, algorithm=settings.algorithm)
     return jwtres
 
 
 async def verify_access_token(token: str, creds_exc: Exception):
     try:
-        payload = jwt.decode(token, secretkey, algorithms=[algorithm])
+        payload = jwt.decode(token, settings.secretkey, algorithms=[settings.algorithm])
         id: str = payload.get('user_id')
         if id is None:
             raise creds_exc
