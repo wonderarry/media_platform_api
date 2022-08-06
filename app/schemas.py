@@ -2,6 +2,8 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 
+from app.models import Vote
+
 class PostBase(BaseModel):
     title: str
     content: str
@@ -50,3 +52,19 @@ class ResponsePost(PostBase):
 
     class Config:
         orm_mode = True
+
+
+class VoteBase(BaseModel):
+    post_id : str
+
+class PostVote(BaseModel):
+    user_id : str
+    pass
+
+class ResponseVote(VoteBase):
+    vote_count : int
+    class Config:
+        orm_mode = True
+
+class ResponseVoteExtended(ResponseVote):
+    vote_direction : int

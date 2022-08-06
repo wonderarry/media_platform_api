@@ -1,6 +1,5 @@
 
 
-
 import string
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
@@ -17,26 +16,16 @@ from ..utils import hash
 from .. import schemas
 
 
-
-
-
 router = APIRouter(prefix='/posts', tags=['posts'])
 
 
-    
-
-
-
-
-
-
-
 @router.get('/', response_model=List[schemas.ResponsePost])
-async def get_posts(db: Session = Depends(get_db), limit : int = 5, page : int = 0, search : Optional[str] = ""):
+async def get_posts(db: Session = Depends(get_db), limit: int = 5, page: int = 0, search: Optional[str] = ""):
     # cursor.execute(""" select * from posts;""")
     # posts = cursor.fetchall()
 
-    posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(limit * page).all()
+    posts = db.query(models.Post).filter(models.Post.title.contains(
+        search)).limit(limit).offset(limit * page).all()
     return posts
     # return {'data' : my_posts}
 
@@ -44,13 +33,13 @@ async def get_posts(db: Session = Depends(get_db), limit : int = 5, page : int =
 
 
 @router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.ResponsePost)
-async def create_post(payload: schemas.CreatePost, db: Session = Depends(get_db),user_id: int =  Depends(oauth2.get_current_user)):
+async def create_post(payload: schemas.CreatePost, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     # cursor.execute(""" insert into posts (title, content, published) values (%s, %s, %s) returning *;""",
     #                (payload.title, payload.content, payload.published))
     # conn.commit()
-    #return {'data' : cursor.fetchone()}
+    # return {'data' : cursor.fetchone()}
     obtained_id = await user_id
-    posts = models.Post(**payload.dict(), user_id = obtained_id.id)
+    posts = models.Post(**payload.dict(), user_id=obtained_id.id)
     db.add(posts)
     db.commit()
     db.refresh(posts)
@@ -79,9 +68,11 @@ async def get_latest_post(db: Session = Depends(get_db)):
     #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='there are no posts in the db')
     # return {'data': searchedpost}
 
-    lastpost = db.query(models.Post).order_by(desc(models.Post.id)).limit(1).all()
+    lastpost = db.query(models.Post).order_by(
+        desc(models.Post.id)).limit(1).all()
     if lastpost is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='there are no posts in the db')
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='there are no posts in the db')
     return lastpost
 
 
@@ -97,10 +88,9 @@ async def get_post(id: int, response: Response, db: Session = Depends(get_db)):
 
     lookedup = db.query(models.Post).filter(models.Post.id == id).first()
     if lookedup is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                        detail=f'post with id: {id} was not found')
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f'post with id: {id} was not found')
     return lookedup
-
 
     # result = await find_post(id)
     # if result is not None:
@@ -122,7 +112,7 @@ async def get_post(id: int, response: Response, db: Session = Depends(get_db)):
 
 
 @router.delete('/{id}')
-async def delete_post(id: int, db: Session = Depends(get_db),user_id: int =  Depends(oauth2.get_current_user)):
+async def delete_post(id: int, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
 
     # cursor.execute("""delete from posts where id = %s returning *;""", (str(id),))
     # res = cursor.fetchone()
@@ -132,20 +122,17 @@ async def delete_post(id: int, db: Session = Depends(get_db),user_id: int =  Dep
     # conn.commit()
     # return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-
     post = db.query(models.Post).filter(models.Post.id == id)
     if post.first() is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                        detail=f'post with id: {id} was not found')
+                            detail=f'post with id: {id} was not found')
     obtained_id = await user_id
-    if obtained_id.id  != post.first().user_id:
+    if obtained_id.id != post.first().user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                        detail=f'you are not the owner of the post')
+                            detail=f'you are not the owner of the post')
     post.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
 
     # searched_index = await find_index_post(id)
     # if searched_index is not None:
@@ -157,7 +144,7 @@ async def delete_post(id: int, db: Session = Depends(get_db),user_id: int =  Dep
 
 
 @router.put('/{id}', response_model=schemas.ResponsePost)
-async def update_post(id: int, post: schemas.UpdatePost, response: Response, db: Session = Depends(get_db),user_id: int =  Depends(oauth2.get_current_user)):
+async def update_post(id: int, post: schemas.UpdatePost, response: Response, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     # cursor.execute("""update posts set title = %s, content = %s, published = %s where id = %s returning *;""", (post.title, post.content, str(post.published), str(id)))
     # res = cursor.fetchone()
     # if res is None:
@@ -167,12 +154,18 @@ async def update_post(id: int, post: schemas.UpdatePost, response: Response, db:
 
     itemquery = db.query(models.Post).filter(models.Post.id == id)
     if itemquery.first() is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'no post with id = {id} found')
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f'no post with id = {id} found')
+
+    obtained_id = await user_id
+    if obtained_id.id != post.first().user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f'you are not the owner of the post')
+
     itemquery.update(post.dict(), synchronize_session=False)
     db.commit()
-    #db.refresh(itemquery.first())
+    # db.refresh(itemquery.first())
     return itemquery.first()
-    
 
     # searched_index = await find_index_post(id)
     # if searched_index is not None:
