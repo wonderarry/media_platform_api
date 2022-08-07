@@ -24,9 +24,50 @@ from fastapi.middleware.cors import CORSMiddleware
 #no need, we have alembic
 #models.Base.metadata.create_all(bind=engine)
 
+#for centos7:
+# sudo yum groupinstall "Development Tools" -y
+# sudo yum install openssl-devel libffi-devel bzip2-devel postgresql-devel sqlite-devel -y
+# wget https://www.python.org/ftp/python/3.9.10/Python-3.9.10.tgz
+# tar xvf Python-3.9.10.tgz
+# cd Python-3.9*/
+# ./configure --enable-optimizations
+# sudo make altinstall
+
+#to set up env in linux
+#add export before every .env var if with uvicorn, under gunicorn - don't add the word, broken down later
+#in .bashrc add set .env
 
 
+#if gunicorn:
+# at /etc/systemd/system create a file called <whatevername>.service, and it should work just fine
+# 
+# 
+# [Unit]
+# Description=fastapi application ran by gunicorn
+# After=network.target
 
+# [Service]
+# User=username
+# Group=username
+# WorkingDirectory=/home/username/fastapi_project/source/
+# Environment="PATH=/home/username/fastapi_project/venv/bin"
+# ExecStart=/home/username/fastapi_project/venv/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8008
+
+# [Install]
+# WantedBy=multi-user.target
+
+# nginx proxy setup:
+# location / {
+#             proxy_pass http://localhost:8008;
+#             proxy_http_version 1.1;
+#             proxy_set_header X-Real-IP $remote_addr;
+#             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#             proxy_set_header Upgrade $http_upgrade;
+#             proxy_set_header Connecion 'upgrade';
+#             proxy_set_header Host $http_host;
+#             proxy_set_header X-NginX-Proxy true;
+#             proxy_redirect off;
+#         }
 
 # from passlib.context import CryptContext
 # pwd_context = CryptContext(schemes=['bcrypt'], deprecated="auto")
@@ -77,7 +118,7 @@ async def testing_alchemy(db: Session = Depends(get_db)):
 
 @app.get('/')
 async def root():
-    return {'message': 'Hello world'}
+    return {'message': 'Hello world. This text has changed'}
 
 
 app.include_router(post.router)
