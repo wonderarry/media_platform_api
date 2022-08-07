@@ -19,7 +19,7 @@ from .routers import post, user, auth, vote
 from . import schemas
 from app import utils
 from .config import settings
-
+from fastapi.middleware.cors import CORSMiddleware
 
 #no need, we have alembic
 #models.Base.metadata.create_all(bind=engine)
@@ -60,7 +60,13 @@ from psycopg2.extras import RealDictCursor
 
 app = FastAPI()
 
-
+#from any website. to be removed.
+origins = ['*']
+app.add_middleware(CORSMiddleware,
+allow_origins = origins,
+allow_credentials = True,
+allow_methods = ['*'],
+allow_headers = ['*'])
     
 
 @app.get('/sqlalch')
