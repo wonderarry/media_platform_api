@@ -21,8 +21,13 @@ from app import utils
 from .config import settings
 
 
+#no need, we have alembic
+#models.Base.metadata.create_all(bind=engine)
 
-models.Base.metadata.create_all(bind=engine)
+
+
+
+
 # from passlib.context import CryptContext
 # pwd_context = CryptContext(schemes=['bcrypt'], deprecated="auto")
 
