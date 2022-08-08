@@ -158,7 +158,7 @@ async def update_post(id: int, post: schemas.UpdatePost, response: Response, db:
                             detail=f'no post with id = {id} found')
 
     obtained_id = await user_id
-    if obtained_id.id != post.first().user_id:
+    if obtained_id.id != itemquery.first().user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f'you are not the owner of the post')
 
