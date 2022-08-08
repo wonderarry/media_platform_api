@@ -1,0 +1,27 @@
+version: "3"
+services:
+ api:
+  #set the image repo name, todo
+  image: fastapi_imagefile
+  #build: .
+  command: bash -c 'alembic upgrade head && uvicorn app.main:app --port 8008 --host 0.0.0.0'
+  ports: [80:8008]
+  env_file: .env
+  environment:
+    - db_host=postgres
+  depends_on:
+    - postgres
+#syntax of volumes: <host folder>:<container folder>:<ro is read-only, omittable>
+ postgres:
+  image: postgres
+  environment:
+    - POSTGRES_PASSWORD=123
+    - POSTGRES_DB=fastapi_db
+  ports: [5432:5432]
+  
+  volumes:
+    - postgres-db:/var/lib/postgresql/data
+
+
+volumes:
+ postgres-db:
